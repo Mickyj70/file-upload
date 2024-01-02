@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3500;
 
 const app = express();
 
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
@@ -26,7 +28,21 @@ app.post(
     const files = req.files;
     console.log(files);
 
-    return res.json({ status: "logged", message: "logged" });
+    Object.keys(files).forEach((key) => {
+      const filepath = path.join(__dirname, "files", files[key].name);
+      files[key].mv(filepath, (err) => {
+        if (err)
+          return res.status(500).json({
+            status: "error",
+            message: err,
+          });
+      });
+    });
+
+    return res.json({
+      status: "success",
+      message: Object.keys(files).toString(),
+    });
   }
 );
 
